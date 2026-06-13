@@ -33,7 +33,18 @@ class ChangePasswordForm(FlaskForm):
     new_password=PasswordField('New Password', validators=[DataRequired(),Length(min=4)])
     confirm_password=PasswordField('Confirm New Password', validators=[DataRequired(),EqualTo('new_password',message='Password must match')])
     submit=SubmitField('Change Password')
+  
+class ForgotPasswordForm(FlaskForm):
+    email=StringField('Emain', validators=[DataRequired(), Email()])
+    submit=SubmitField('Verify otp')
     
+class ResetPassowrdForm(FlaskForm):
+    otp=StringField('Otp', validators=[DataRequired(), Length(min=6, max=6)])
+    new_password=PasswordField('New Password', validators=[DataRequired(),Length(min=4)])
+    confirm_password=PasswordField('Confirm New Password', validators=[DataRequired(),EqualTo('new_password',message='Password must match')])
+    submit=SubmitField('Reset Password')
+    
+      
 
     
 

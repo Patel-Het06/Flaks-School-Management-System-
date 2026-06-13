@@ -1,5 +1,5 @@
 from flask import Blueprint, flash, render_template, redirect, url_for, session
-from forms import RegistrationForm, LoginForm, OTPForm
+from forms import RegistrationForm, LoginForm, OTPForm, ForgotPasswordForm, ResetPassowrdForm
 from extensions import db, mail
 from models import User
 from werkzeug.security import generate_password_hash, check_password_hash
@@ -178,7 +178,96 @@ def login():
         else:
             return redirect(url_for('admin.dashboard'))       
    
-    return render_template('auth/login.html',form=form) 
+    return render_template('auth/login.html',form=form)
+
+@auth.route('/forgot-password',methods=['GET', 'POST'])
+def forgot_password():
+    form=ForgotPasswordForm()
+    
+    if form.validate_on_submit():
+        user=User.query.filter_by(email=form.email.data).first()
+        
+        if not user:
+            flash('Email not found!', 'danger')
+            return redirect(url_for('auth.forgot_password'))
+        
+        otp=generate_otp()
+        user.otp = otp
+        user.otp_created_at= datetime.utcnow()
+        db.session.commit()
+        
+        send_otp_email(form.email.data, otp)
+        session['reset_email']= form.email.data
+        
+        flash('OTP sent to your email!', 'success')
+        return redirect(url_for('auth.reset_password'))
+    
+    return render_template('auth/forgot_password.html', form=form)
+
+@auth.route('/reset-password', methods=['GET', 'POST'])
+def reset_password():
+    form=ResetPassowrdForm()
+    email=session.get('reset_email')
+    
+    if not email:
+        flash('Session expired!', 'danger')
+        return redirect(url_for('auth.forgot_password'))
+    
+    if form.validate_on_submit():
+        user=User.query.filter_by(email=email).first()
+        
+        if not user:
+            flash('User not found!', 'danger')
+            return redirect(url_for('auth.forgot_password'))
+        
+        otp_age=datetime.utcnow()- user.otp_created_at
+        if otp_age> timedelta(minutes=5):
+            flash('OTP expired! Try again.', 'danger')
+            return redirect(url_for('auth.forgot_password'))
+        
+        if form.otp.data != user.otp:
+            flash('Wrong OTP!', 'danger')
+            return redirect(url_for('auth.reset_password'))
+        
+        user.password= generate_password_hash(form.new_password.data)
+        user.otp= None
+        user.otp_created_at=None
+        db.session.commit()
+        
+        session.pop('reset_email', None)
+        flash('Password reset successfully please login!', 'success')
+        return redirect(url_for('auth.login'))
+    return render_template('auth/reset_password.html', form=form)
+
+
+
+# djbbjkvmhbnbs
+
+@auth.route('/resend-otp-for-reset-password')
+def resend_otp_for_reset_password():
+    email = session.get('reset_email')
+
+    if not email:
+        flash('Session expired! Please enter email again.', 'danger')
+        return redirect(url_for('auth.forgot_password'))
+    
+    user = User.query.filter_by(email=email).first()
+    
+    if not user:
+        flash('User not found!', 'danger')
+        return redirect(url_for('auth.forgot_password'))
+    
+    otp=generate_otp()
+    user.otp= otp
+    user.otp_created_at=datetime.utcnow()
+    db.session.commit()
+    
+    send_otp_email(email, otp)
+    
+    flash('New OTP sent to your email!', 'info')
+    return redirect(url_for('auth.reset_password'))
+    
+
 
 @auth.route('/logout')
 @login_required

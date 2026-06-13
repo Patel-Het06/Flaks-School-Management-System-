@@ -29,6 +29,8 @@
             {{form.remember.label}}
         </div>
 
+        <a href="{{url_for('auth.forgot_password')}}" class="btn btn-info">🔑 Forgot Password?</a>
+        
         {{form.submit(class="btn btn-primary")}}
         <a href="{{url_for('auth.register')}}" class="btn btn-success">Don't have account? Register</a>
     </form>
