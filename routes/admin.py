@@ -2,7 +2,8 @@ from flask import Blueprint, render_template, flash ,redirect,url_for
 from models import User
 from extensions import db
 from flask_login import login_required, current_user
-from forms import UpdateProfileForm
+from forms import UpdateProfileForm, ChangePasswordForm
+from werkzeug.security import check_password_hash, generate_password_hash
 
 admin = Blueprint('admin', __name__)
 
@@ -50,5 +51,26 @@ def delete_user(id):
     db.session.commit()
     flash('User deleted successfully!', 'success')
     return redirect(url_for('admin.dashboard'))
+
+@admin.route('/admin/change-password',methods=['GET', 'POST'])
+@login_required
+def change_password():
+    if current_user.role !='admin':
+        flash('Access Denied', 'danger')
+        return redirect(url_for('user.dashboard'))
+    
+    form=ChangePasswordForm()
+    
+    if form.validate_on_submit():
+        if not check_password_hash(current_user.password, form.old_password.data):
+            flash('Old password is wrong', 'success')
+            return redirect(url_for('admin.change_password'))
+        
+        current_user.password=generate_password_hash(form.new_password.data)
+        db.session.commit()
+        flash('Password Change Successfully!', 'success')
+        return redirect(url_for('admin.profile'))
+    
+    return render_template('admin/change_password.html', form=form)
     
     
