@@ -1,0 +1,45 @@
+{% extends 'base.html'%}
+
+{% block content %}
+
+<div class="jumbotron">
+    <h2>👑 Welcome Admin, {{ current_user.name|title }}!</h2>
+    <p>Total User: {{users|length }}</p>
+    <hr>
+    {% if users %}
+        <table class="table table-bordered">
+            <tr class="table-dark">
+                <th>Id</td>
+                <th>Name</th>
+                <th>Email</th>
+                <th>Mobile</th>
+                <th>Gender</th>
+                <th>Verified</th>
+                <th>Action</th>
+            </tr>
+            {% for u in users %}
+                <tr>
+                    <td>{{u.id}}</td>
+                    <td>{{u.name}}</td>
+                    <td>{{u.email}}</td>
+                    <td>{{u.mobile}}</td>
+                    <td>{{u.gender}}</td>
+                    <td>
+                        {% if u.is_verified %}
+                            <span class="badge badge-success">✅ Yes</span>
+                        {% else %}
+                            <span class="badge badge-danger">❌ No</span>
+                        {% endif %}
+                    </td>
+                    <td><a href="{{url_for('admin.delete_user', id=u.id) }}" class="btn btn-danger btn-sm">🗑️ Delete</a></td>
+                </tr>
+                {% endfor %}
+        </table>
+    {% else %}
+        <div class="alert alert-warning">⚠️ No users found!</div>
+    {% endif %}
+
+    <a href="{{url_for('admin.profile')}}" class="btn btn-primary">👑 My Profile</a>
+    <a href="{{url_for('auth.logout')}}" class="btn btn-danger">Logout</a>
+</div>
+{% endblock %}

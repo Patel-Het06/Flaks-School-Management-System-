@@ -1,0 +1,12 @@
+{% extends 'base.html'%}
+
+{% block content %}
+
+<div class="jumbotron">
+    <h2>👤 Welcome, {{ current_user.name |title }} !</h2>
+    <p>You are logged in as <Strong>User</Strong></p>
+    <hr>
+    <a href="{{url_for('user.profile')}}">👤 My Profile</a>
+    <a href="{{url_for('auth.logout')}}" class="btn btn-danger">Logout</a>
+</div>
+{% endblock %}

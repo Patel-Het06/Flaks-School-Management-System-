@@ -1,0 +1,99 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>🏫 School Management System</title>
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/css/bootstrap.min.css">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+    <style>
+        body.dark {
+            background-color: #1a1a2e;
+            color: white;
+        }
+        body.dark .navbar {
+            background-color: #16213e !important;
+        }
+        body.dark .jumbotron {
+            background-color: #0f3460;
+            color: white;
+        }
+        body.dark .table {
+            color: white;
+        }
+        body.dark .card {
+            background-color: #16213e;
+            color: white;
+        }
+    </style>
+</head>
+<body id="main-body">
+
+    <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
+        <a class='navbar-brand'href="{{url_for('auth.home')}}">🏫 School System</a>
+
+        <div class="ml-auto d-flex align-items-center">
+                
+            
+            <!-- Theme Toggle -->
+            <span class="text-white mr-1">☀️</span>
+            <div class="custom-control custom-switch mr-3">
+                <input type="checkbox" class="custom-control-input" id="themeToggle">
+                <label class="custom-control-label text-white" for="themeToggle">🌙</label>
+            </div>
+
+
+            {% if current_user.is_authenticated %}
+                {% if current_user.role=='admin' %}
+                    <a href="{{url_for('admin.profile')}}" class="btn btn-outline-light btn-sm mr-2">
+                        👑{{current_user.name|title}} (Admin)
+                    </a>
+                {% else %}
+                    <a href="{{url_for('user.profile')}}" class="btn btn-outline-light btn-sm mr-2">
+                        👤 {{current_user.name|title}} (User)
+                    </a>
+                {% endif %}
+
+                <a class="btn btn-danger"href="{{url_for('auth.logout')}}">🚪 Logout</a>
+            {% else %}
+                <a class="btn btn-outline-light mr-2" href="{{url_for('auth.login')}}">Login</a>
+                <a class="btn btn-success" href="{{url_for('auth.register')}}">Register</a>
+            {% endif %}
+        </div>
+    </nav>
+
+    <div class="container mt-4">
+        {% with messages = get_flashed_messages(with_categories=true) %}
+            {% if messages %}
+                {% for category, message in messages %}
+                    <div class="alert alert-{{ category }}">{{ message }}</div>
+                {% endfor %}
+            {% endif %}
+        {% endwith %}
+
+        {% block content %}
+        {% endblock %}
+    </div>
+
+<script>
+     const toggle = document.getElementById('themeToggle');
+        const body = document.getElementById('main-body');
+
+        if (localStorage.getItem('theme') === 'dark') {
+            body.classList.add('dark');
+            toggle.checked = true;
+        }
+
+        toggle.addEventListener('change', function() {
+            if (this.checked) {
+                body.classList.add('dark');
+                localStorage.setItem('theme', 'dark');
+            } else {
+                body.classList.remove('dark');
+                localStorage.setItem('theme', 'light');
+            }
+        });
+</script>
+    
+</body>
+</html>
